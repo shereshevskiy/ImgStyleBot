@@ -1,0 +1,7 @@
+pyTelegramBotAPI
+# psycopg2-binary
+# numpy
+# pandas
+# requests
+# jupyterlab  # for developing only, not for prod
+# jupyter  # for developing only, not for prod
