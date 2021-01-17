@@ -15,12 +15,15 @@ START_TEXT = """
     - с использованием предустановленных у меня стилей. 
     
     Воспользуйтесь командами: 
-/stylize - для старта стилизации
+/style_start - для старта стилизации
 
 /styles - список предустановленных стилей
     
 /help - чтобы узнать все доступные команды
+
+или используйте кнопки внизу
 """
+start_buttons = ["/style_start", "/styles", "/help"]
 
 # styles
 styles = {
@@ -29,12 +32,12 @@ styles = {
     '3': 'Ukiyoe',
     '4': 'Vangogh'
 }
-styles_str = '\n' + ''.join([f"\t{key}  {styles[key]}\n" for key in styles])
+styles_str = '\n' + '\n'.join([f"{key}  {styles[key]}" for key in styles])
 
 PHOTO_IDs = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: None)))
 
 # state init and state func
-START, CONTENT, STYLE_and_NST, GAN = range(4)
+START, CONTENT, STYLE_NST, GAN = range(4)
 USER_STATE = defaultdict(lambda: START)
 
 
@@ -63,7 +66,7 @@ def create_keyboard():
 def my_bot():
     bot = telebot.TeleBot(TOKEN)
 
-    @bot.message_handler(commands=["stylize"])
+    @bot.message_handler(commands=["style_start"])
     def handle_stylize(message):
         text = """
 Пришлите картинку, которую Вы хотите стилизовать (картинку с контентом)
@@ -82,10 +85,10 @@ def my_bot():
         Стилизацию можно сделать двумя способами:
         
 1) Стиль задаете Вы. Нужно будет прислать картинку, которая будет использована как образец стиля. Например - любая 
-картина Вангога, Моне и тп. Это будет дольше, придется подождать 10-15 минут 
+картина Вангога, Моне и тп. Это будет дольше, придется подождать 3-5 минут
 
 2) Стиль выбирается из уже предустановленных здесь (Стиль на выбор). 
-Это будет быстрее, около 3-5 минут
+Это будет быстрее, около 1-2 минут
 
     Укажите, пожалуйста, какой вариант Вы выбираете?
         """
@@ -103,21 +106,21 @@ def my_bot():
             Пришлите, пожалуйста, картинку со стилем
             """
             bot.send_message(message.chat.id, text=text)
-            update_state(message, STYLE_and_NST)
+            update_state(message, STYLE_NST)
 
         elif callback_text == variant2:
             text = f"""
             Список стилей:
             {styles_str}
             Выберите, пожалуйста, и вышлите номер стиля
-            (можно использовать кнопки под строкой ввода)
+            (можно использовать кнопки внизу)
             """
             keyboard_styles = telebot.types.ReplyKeyboardMarkup(True, True)
             keyboard_styles.row(*styles.keys())
             bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
             update_state(message, GAN)
 
-    @bot.message_handler(func=lambda message: get_state(message) == STYLE_and_NST, content_types=["photo"])
+    @bot.message_handler(func=lambda message: get_state(message) == STYLE_NST, content_types=["photo"])
     def handle_style(message):
         if message.photo:
             # обрабатываем входящее сообщение
@@ -134,7 +137,7 @@ def my_bot():
             style_img = bot.download_file(style_info.file_path)
 
             # делаем стилизацию и высылаем в чат
-            bot.send_message(message.chat.id, text="Ожидайте 10-15 минут...")
+            bot.send_message(message.chat.id, text="Ожидайте 1-2 минуты...")
             img_style = ImgStyle()
             stylized_img = img_style.nst_stylize(content_img, style_img)
             bot.send_photo(message.chat.id, stylized_img)
@@ -176,7 +179,7 @@ def my_bot():
         text = """
 /start - начало общения с ботом
 
-/stylize - старт стилизации
+/style_start - старт стилизации
 
 /help - помощь
 
@@ -186,11 +189,17 @@ def my_bot():
 
     @bot.message_handler(commands=["start"])
     def handle_start(message):
-        bot.send_message(message.chat.id, text=START_TEXT)
+        keyboard_start = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard_start.row(*start_buttons)
+        bot.send_message(message.chat.id, text=START_TEXT, reply_markup=keyboard_start)
+        update_state(message, START)
 
     @bot.message_handler()
     def handle_any(message):
-        bot.send_message(message.chat.id, text=START_TEXT)
+        keyboard_start = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard_start.row(*start_buttons)
+        bot.send_message(message.chat.id, text=START_TEXT, reply_markup=keyboard_start)
+        update_state(message, START)
 
     bot.polling()
 
