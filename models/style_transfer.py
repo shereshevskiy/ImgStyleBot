@@ -1,8 +1,6 @@
 import copy
 import os
 
-import PIL
-
 import torch
 from PIL import Image
 from torch import optim, nn
@@ -157,21 +155,14 @@ class NSTModel:
 
     @staticmethod
     def img2PILimg(image):
-        if isinstance(image, PIL.Image.Image):
+        if isinstance(image, Image.Image):
             image = image
         else:
-            with open(os.path.join(ROOT_DIR, "test_data", "img_buffer.ipg"), 'wb') as file:
+            img_buffer_path = os.path.join(ROOT_DIR, "test_data", "img_buffer.ipg")
+            with open(img_buffer_path, 'wb') as file:
                 file.write(image)
-            image = Image.open(os.path.join(ROOT_DIR, "test_data", "img_buffer.ipg"))
-            # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            # cv2.imwrite(os.path.join(ROOT_DIR, "test_data", "img_buffer.png"), image)
-            # image = Image.open(os.path.join(ROOT_DIR, "test_data", "img_buffer.png"))
-            # image = Image.fromarray(image)
-            # image = np.array(image)
-            # image = transforms.ToPILImage()(image)
-            # image = Image.frombytes("RGB", (128, 128), image)
-            # image = Image.open(StringIO.StringIO(image))
-            # pass
+            image = Image.open(img_buffer_path)
+
         return image
 
     def get_stylized_image(self, content_img, style_img):

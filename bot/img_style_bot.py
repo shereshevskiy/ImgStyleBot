@@ -1,10 +1,12 @@
 # import urllib
 from collections import defaultdict
 import telebot
+# from PIL import Image
 from telebot import types
 from models.image_stylize import ImgStyle
+# import numpy as np
 
-from config import TOKEN  # , ROOT_DIR
+from config import TOKEN
 
 # initialization
 START_TEXT = """
@@ -36,7 +38,7 @@ styles_str = '\n' + '\n'.join([f"{key}  {styles[key]}" for key in styles])
 
 PHOTO_IDs = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: None)))
 
-# state init and state func
+# stats init and state func
 START, CONTENT, STYLE_NST, GAN = range(4)
 USER_STATE = defaultdict(lambda: START)
 
@@ -49,17 +51,8 @@ def update_state(message, state):
     USER_STATE[message.chat.id] = state
 
 
-# initialization for keyboard
-variant1 = "1) Ваш стиль"
-variant2 = "2) Стиль на выбор"
-buttons_list = [variant1, variant2]
-
-
-def create_keyboard():
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    buttons = [types.InlineKeyboardButton(text=item, callback_data=item) for item in buttons_list]
-    keyboard.add(*buttons)
-    return keyboard
+# variants init
+variants = ["Ваш стиль", "Стиль на выбор"]
 
 
 # *************** bot ***************
@@ -67,10 +60,10 @@ def my_bot():
     bot = telebot.TeleBot(TOKEN)
 
     @bot.message_handler(commands=["style_start"])
-    def handle_stylize(message):
+    def handle_style_start(message):
         text = """
 Пришлите картинку, которую Вы хотите стилизовать (картинку с контентом)
-            """
+               """
         bot.send_message(message.chat.id, text=text)
         update_state(message, CONTENT)
 
@@ -92,23 +85,31 @@ def my_bot():
 
     Укажите, пожалуйста, какой вариант Вы выбираете?
         """
+
+        def create_keyboard():
+            buttons_list = variants
+            keyboard_ = types.InlineKeyboardMarkup(row_width=2)
+            buttons = [types.InlineKeyboardButton(text=item, callback_data=item) for item in buttons_list]
+            keyboard_.add(*buttons)
+            return keyboard_
+
         keyboard = create_keyboard()
         bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
     # обрабатываем кнопки
     @bot.callback_query_handler(func=lambda x: True)
-    def callback_handler(callback_query):
+    def content_callback_handler(callback_query):
         message = callback_query.message
         callback_text = callback_query.data
 
-        if callback_text == variant1:
+        if callback_text == variants[0]:
             text = """
             Пришлите, пожалуйста, картинку со стилем
             """
             bot.send_message(message.chat.id, text=text)
             update_state(message, STYLE_NST)
 
-        elif callback_text == variant2:
+        elif callback_text == variants[1]:
             text = f"""
             Список стилей:
             {styles_str}
@@ -121,7 +122,7 @@ def my_bot():
             update_state(message, GAN)
 
     @bot.message_handler(func=lambda message: get_state(message) == STYLE_NST, content_types=["photo"])
-    def handle_style(message):
+    def handle_style_NST(message):
         if message.photo:
             # обрабатываем входящее сообщение
             photo_id = message.photo[0].file_id
@@ -137,7 +138,7 @@ def my_bot():
             style_img = bot.download_file(style_info.file_path)
 
             # делаем стилизацию и высылаем в чат
-            bot.send_message(message.chat.id, text="Ожидайте 1-2 минуты...")
+            bot.send_message(message.chat.id, text="Ожидайте 3-5 минуты...")
             img_style = ImgStyle()
             stylized_img = img_style.nst_stylize(content_img, style_img)
             bot.send_photo(message.chat.id, stylized_img)
@@ -160,7 +161,7 @@ def my_bot():
             file_info = bot.get_file(content_id)
             content_img = bot.download_file(file_info.file_path)
             # делаем стилизацию и высылаем в чат
-            bot.send_message(message.chat.id, text="Ожидайте 3-5 минут...")
+            bot.send_message(message.chat.id, text="Ожидайте 1-2 минут...")
             img_style = ImgStyle()
             stylized_img = img_style.gan_stylize(content_img, styles[style_key])
             bot.send_photo(message.chat.id, stylized_img)

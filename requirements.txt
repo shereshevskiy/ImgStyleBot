@@ -2,13 +2,11 @@ pyTelegramBotAPI
 torch==1.7.1+cpu
 torchvision==0.8.2+cpu
 torchaudio==0.7.2
-opencv-python
-numpy
 # psycopg2-binary
-# numpy
+numpy
 # pandas
 # requests
-jupyter  # for developing only, not for prod
-jupyterlab  # for developing only, not for prod
-matplotlib  # for developing only, not for prod
+# jupyter  # for developing only, not for prod
+# jupyterlab  # for developing only, not for prod
+# matplotlib  # for developing only, not for prod
 Pillow~=8.1.0
