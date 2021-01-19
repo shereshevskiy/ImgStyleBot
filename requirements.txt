@@ -1,4 +1,5 @@
 pyTelegramBotAPI
+python-dotenv
 
 -f https://download.pytorch.org/whl/torch_stable.html
 torch==1.7.1+cpu
@@ -8,7 +9,6 @@ torchvision==0.8.2+cpu
 
 -f https://download.pytorch.org/whl/torch_stable.html
 torchaudio==0.7.2
-# psycopg2-binary
 numpy
 # pandas
 # requests

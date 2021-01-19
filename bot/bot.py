@@ -1,15 +1,18 @@
 # import urllib
 import io
+import os
 from collections import defaultdict
 import telebot
 from PIL import Image
 from telebot import types
 from models.image_stylize import ImgStyle
+from dotenv import load_dotenv
 # import numpy as np
 
-from config import TOKEN
 from .settings import gan_styles, start_buttons, START_TEXT, variants
+load_dotenv()
 
+TOKEN = os.getenv("BOT_TOKEN")
 
 # init of store for photo ids
 PHOTO_IDs = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: None)))
