@@ -7,42 +7,18 @@ from models.image_stylize import ImgStyle
 # import numpy as np
 
 from config import TOKEN
+from .settings import gan_styles, start_buttons, START_TEXT, variants
 
-# initialization
-START_TEXT = """
-    Привет! 
-    Я Бот, который может стилизовать Ваши картинки. 
-Я это делаю в двух вариантах: 
-    - с вашим образцом стиля и 
-    - с использованием предустановленных у меня стилей. 
-    
-    Воспользуйтесь командами: 
-/style_start - для старта стилизации
 
-/styles - список предустановленных стилей
-    
-/help - чтобы узнать все доступные команды
-
-или используйте кнопки внизу
-"""
-start_buttons = ["/style_start", "/styles", "/help"]
-
-# styles
-styles = {
-    '1': 'Monet',
-    '2': 'Cezanne',
-    '3': 'Ukiyoe',
-    '4': 'Vangogh'
-}
-styles_str = '\n' + '\n'.join([f"{key}  {styles[key]}" for key in styles])
-
+# init of store for photo ids
 PHOTO_IDs = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: None)))
 
-# stats init and state func
+# init stats
 START, CONTENT, STYLE_NST, GAN = range(4)
 USER_STATE = defaultdict(lambda: START)
 
 
+# set of stat func
 def get_state(message):
     return USER_STATE[message.chat.id]
 
@@ -51,11 +27,8 @@ def update_state(message, state):
     USER_STATE[message.chat.id] = state
 
 
-# variants init
-variants = ["Ваш стиль", "Стиль на выбор"]
-
-
 # *************** bot ***************
+
 def my_bot():
     bot = telebot.TeleBot(TOKEN)
 
@@ -110,14 +83,16 @@ def my_bot():
             update_state(message, STYLE_NST)
 
         elif callback_text == variants[1]:
+            gan_styles_str = '\n'.join(gan_styles.keys())
             text = f"""
             Список стилей:
-            {styles_str}
-            Выберите, пожалуйста, и вышлите номер стиля
+            \n{gan_styles_str}
+            
+            Выберите, пожалуйста, и вышлите название стиля
             (можно использовать кнопки внизу)
             """
             keyboard_styles = telebot.types.ReplyKeyboardMarkup(True, True)
-            keyboard_styles.row(*styles.keys())
+            keyboard_styles.row(*gan_styles.keys())
             bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
             update_state(message, GAN)
 
@@ -153,8 +128,8 @@ def my_bot():
     @bot.message_handler(func=lambda message: get_state(message) == GAN)
     def handle_GAN(message):
         style_key = message.text
-        if style_key not in styles.keys():
-            text = f"Хм...этот стиль мне неизвестен... Введите один из номеров {', '.join(styles.keys())}"
+        if style_key not in gan_styles.keys():
+            text = f"Хм...этот стиль мне неизвестен... Введите один из номеров {', '.join(gan_styles.keys())}"
             bot.send_message(message.chat.id, text=text)
         else:
             content_id = PHOTO_IDs[message.chat.id]["content"]
@@ -163,15 +138,16 @@ def my_bot():
             # делаем стилизацию и высылаем в чат
             bot.send_message(message.chat.id, text="Ожидайте 1-2 минут...")
             img_style = ImgStyle()
-            stylized_img = img_style.gan_stylize(content_img, styles[style_key])
+            stylized_img = img_style.gan_stylize(content_img, gan_styles[style_key])
             bot.send_photo(message.chat.id, stylized_img)
             update_state(message, START)
 
-    @bot.message_handler(commands=["styles"])
+    @bot.message_handler(commands=["gan_styles"])
     def handle_styles(message):
+        gan_styles_str = '\n'.join(gan_styles.keys())
         text = f"""
         Список предустановленных стилей
-        {styles_str}
+        \n{gan_styles_str}
         """
         bot.send_message(message.chat.id, text=text)
 
@@ -184,7 +160,7 @@ def my_bot():
 
 /help - помощь
 
-/styles - список предустановленных стилей
+/gan_styles - список предустановленных стилей
         """
         bot.send_message(message.chat.id, text=text)
 

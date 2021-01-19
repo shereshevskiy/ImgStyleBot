@@ -1,4 +1,4 @@
-from models.style_transfer import NSTModel
+from models.nst_model import NSTModel
 
 
 class ImgStyle:

@@ -1,4 +1,4 @@
-from bot.img_style_bot import my_bot
+from bot.bot import my_bot
 
 
 my_bot()

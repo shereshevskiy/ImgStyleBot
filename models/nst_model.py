@@ -8,7 +8,7 @@ from torchvision import models
 from torchvision.transforms import transforms
 
 from config import ROOT_DIR
-from models.utils import Normalization, ContentLoss, StyleLoss
+from models.nst_utils import Normalization, ContentLoss, StyleLoss
 
 
 class NSTModel:
@@ -158,7 +158,7 @@ class NSTModel:
         if isinstance(image, Image.Image):
             image = image
         else:
-            img_buffer_path = os.path.join(ROOT_DIR, "test_data", "img_buffer.ipg")
+            img_buffer_path = os.path.join(ROOT_DIR, "data", "img_buffer.ipg")
             with open(img_buffer_path, 'wb') as file:
                 file.write(image)
             image = Image.open(img_buffer_path)
