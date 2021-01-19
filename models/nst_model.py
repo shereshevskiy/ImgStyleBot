@@ -1,13 +1,10 @@
 import copy
-import os
 
 import torch
-from PIL import Image
 from torch import optim, nn
 from torchvision import models
 from torchvision.transforms import transforms
 
-from config import ROOT_DIR
 from models.nst_utils import Normalization, ContentLoss, StyleLoss
 
 
@@ -153,26 +150,11 @@ class NSTModel:
 
         return input_img
 
-    @staticmethod
-    def img2PILimg(image):
-        if isinstance(image, Image.Image):
-            image = image
-        else:
-            img_buffer_path = os.path.join(ROOT_DIR, "data", "img_buffer.ipg")
-            with open(img_buffer_path, 'wb') as file:
-                file.write(image)
-            image = Image.open(img_buffer_path)
-
-        return image
-
     def get_stylized_image(self, content_img, style_img):
         transformer = transforms.Compose([
             transforms.Resize(self.imsize),  # нормируем размер изображения
             transforms.CenterCrop(self.imsize),
             transforms.ToTensor()])  # превращаем в удобный формат
-
-        content_img = self.img2PILimg(content_img)
-        style_img = self.img2PILimg(style_img)
 
         content_img = transformer(content_img).unsqueeze(0).to(self.device, torch.float)
         style_img = transformer(style_img).unsqueeze(0).to(self.device, torch.float)

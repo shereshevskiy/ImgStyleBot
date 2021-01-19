@@ -1,7 +1,8 @@
 # import urllib
+import io
 from collections import defaultdict
 import telebot
-# from PIL import Image
+from PIL import Image
 from telebot import types
 from models.image_stylize import ImgStyle
 # import numpy as np
@@ -107,10 +108,12 @@ def my_bot():
             content_id = PHOTO_IDs[message.chat.id]["content"]
             content_info = bot.get_file(content_id)
             content_img = bot.download_file(content_info.file_path)
+            content_img = Image.open(io.BytesIO(content_img))
 
             style_id = PHOTO_IDs[message.chat.id]["style"]
             style_info = bot.get_file(style_id)
             style_img = bot.download_file(style_info.file_path)
+            style_img = Image.open(io.BytesIO(style_img))
 
             # делаем стилизацию и высылаем в чат
             bot.send_message(message.chat.id, text="Ожидайте 3-5 минуты...")
