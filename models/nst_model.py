@@ -10,8 +10,9 @@ from models.nst_utils import Normalization, ContentLoss, StyleLoss
 
 class NSTModel:
 
-    def __init__(self, imsize, num_steps=500, style_weight=100000, content_weight=1):
+    def __init__(self, imsize, style_img, num_steps=500, style_weight=100000, content_weight=1):
         self.imsize = imsize
+        self.style_img = style_img
         self.num_steps = num_steps
         self.style_weight = style_weight
         self.content_weight = content_weight
@@ -150,20 +151,20 @@ class NSTModel:
 
         return input_img
 
-    def get_stylized_image(self, content_img, style_img):
+    def get_stylized_image(self, content_img):
         transformer = transforms.Compose([
             transforms.Resize(self.imsize),  # нормируем размер изображения
             transforms.CenterCrop(self.imsize),
             transforms.ToTensor()])  # превращаем в удобный формат
 
         content_img = transformer(content_img).unsqueeze(0).to(self.device, torch.float)
-        style_img = transformer(style_img).unsqueeze(0).to(self.device, torch.float)
+        style_img = transformer(self.style_img).unsqueeze(0).to(self.device, torch.float)
         input_img = content_img.clone()
 
         output = self.run_style_transfer(self.cnn, self.cnn_normalization_mean, self.cnn_normalization_std,
                                          content_img, style_img, input_img, num_steps=self.num_steps,
                                          style_weight=self.style_weight, content_weight=self.content_weight)
-        tensor2img = transforms.ToPILImage()  # тензор в кратинку
+        tensor2img = transforms.ToPILImage()  # тензор в картинку
 
         image = output.cpu().clone()
         image = image.squeeze(0)

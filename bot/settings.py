@@ -8,6 +8,9 @@ START_TEXT = """
     - с использованием предустановленных у меня стилей. 
 
     Воспользуйтесь командами: 
+    
+/start - начало общения с ботом
+    
 /style_start - для старта стилизации
 
 /gan_styles - список предустановленных стилей
@@ -17,7 +20,7 @@ START_TEXT = """
 или используйте кнопки внизу
 """
 
-start_buttons = ["/style_start", "/gan_styles", "/help"]
+start_buttons = ["/start", "/style_start", "/gan_styles", "/help"]
 
 # gan_styles
 gan_styles = {

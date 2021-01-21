@@ -54,11 +54,11 @@ def my_bot():
         Будем ее стилизовать.
         Стилизацию можно сделать двумя способами:
         
-1) Стиль задаете Вы. Нужно будет прислать картинку, которая будет использована как образец стиля. Например - любая 
-картина Вангога, Моне и тп. Это будет дольше, придется подождать 3-5 минут
+1) Долгий вариант. Стиль задаете Вы. Нужно прислать картинку, которая будет использована как образец стиля. Например 
+- любая картина в стиле барокко, абстракционизм и тп. Придется подождать 3-5 минут 
 
-2) Стиль выбирается из уже предустановленных здесь (Стиль на выбор). 
-Это будет быстрее, около 1-2 минут
+2) Быстрый вариант. Стиль выбирается из уже предустановленных здесь (Стиль на выбор). 
+Будет почти сразу
 
     Укажите, пожалуйста, какой вариант Вы выбираете?
         """
@@ -111,12 +111,12 @@ def my_bot():
             content_id = PHOTO_IDs[message.chat.id]["content"]
             content_info = bot.get_file(content_id)
             content_img = bot.download_file(content_info.file_path)
-            content_img = Image.open(io.BytesIO(content_img))
+            content_img = Image.open(io.BytesIO(content_img))  # to PIL Image format
 
             style_id = PHOTO_IDs[message.chat.id]["style"]
             style_info = bot.get_file(style_id)
             style_img = bot.download_file(style_info.file_path)
-            style_img = Image.open(io.BytesIO(style_img))
+            style_img = Image.open(io.BytesIO(style_img))  # to PIL Image format
 
             # делаем стилизацию и высылаем в чат
             bot.send_message(message.chat.id, text="Ожидайте 3-5 минуты...")
@@ -141,10 +141,11 @@ def my_bot():
             content_id = PHOTO_IDs[message.chat.id]["content"]
             file_info = bot.get_file(content_id)
             content_img = bot.download_file(file_info.file_path)
+            content_img = Image.open(io.BytesIO(content_img))  # to PIL Image format
             # делаем стилизацию и высылаем в чат
-            bot.send_message(message.chat.id, text="Ожидайте 1-2 минут...")
+            bot.send_message(message.chat.id, text="Ожидайте, будет быстро...")
             img_style = ImgStyle()
-            stylized_img = img_style.gan_stylize(content_img, gan_styles[style_key])
+            stylized_img = img_style.cgan_stylize(content_img, gan_styles[style_key])
             bot.send_photo(message.chat.id, stylized_img)
             update_state(message, START)
 
