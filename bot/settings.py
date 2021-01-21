@@ -24,10 +24,10 @@ start_buttons = ["/start", "/style_start", "/gan_styles", "/help"]
 
 # gan_styles
 gan_styles = {
-    'Моне': 'Monet',
-    'Сезанн': 'Cezanne',
-    'Укиё-э': 'Ukiyoe',
-    'Вангог': 'Vangogh'
+    'Моне': 'monet',
+    'Сезанн': 'cezanne',
+    'Укиё-э': 'ukiyoe',
+    'Вангог': 'vangogh'
 }
 
 # variants init
