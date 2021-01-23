@@ -121,9 +121,10 @@ def my_bot():
 
             # делаем стилизацию и высылаем в чат
             bot.send_message(message.chat.id, text="Ожидайте 3-5 минуты...")
-            img_style = ImgStyle(nst_imsize)
-            stylized_img = img_style.nst_stylize(content_img, style_img)
+            img_stylizer = ImgStyle(nst_imsize)
+            stylized_img = img_stylizer.nst_stylize(content_img, style_img)
             bot.send_photo(message.chat.id, stylized_img)
+            del img_stylizer
             update_state(message, START)
         else:
             text = f"""
@@ -145,9 +146,10 @@ def my_bot():
             content_img = Image.open(io.BytesIO(content_img))  # to PIL Image format
             # делаем стилизацию и высылаем в чат
             bot.send_message(message.chat.id, text="Ожидайте, будет быстро...")
-            img_style = ImgStyle()
-            stylized_img = img_style.cgan_stylize(content_img, gan_styles[style_key])
+            img_stylizer = ImgStyle()
+            stylized_img = img_stylizer.cgan_stylize(content_img, gan_styles[style_key])
             bot.send_photo(message.chat.id, stylized_img)
+            del img_stylizer
             update_state(message, START)
 
     @bot.message_handler(commands=["gan_styles"])
