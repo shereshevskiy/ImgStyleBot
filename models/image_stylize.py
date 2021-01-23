@@ -4,7 +4,7 @@ from models.cgan_model import CGANModel
 
 class ImgStyle:
 
-    def __init__(self, imsize=128):
+    def __init__(self, imsize=None):
         self.imsize = imsize
 
     def nst_stylize(self, content_img, style_img):

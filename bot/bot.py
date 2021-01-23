@@ -5,11 +5,12 @@ from collections import defaultdict
 import telebot
 from PIL import Image
 from telebot import types
+
 from models.image_stylize import ImgStyle
 from dotenv import load_dotenv
 # import numpy as np
-
-from .settings import gan_styles, start_buttons, START_TEXT, variants
+from config import nst_imsize
+from bot.bot_settings import gan_styles, start_buttons, START_TEXT, variants
 load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
@@ -120,7 +121,7 @@ def my_bot():
 
             # делаем стилизацию и высылаем в чат
             bot.send_message(message.chat.id, text="Ожидайте 3-5 минуты...")
-            img_style = ImgStyle()
+            img_style = ImgStyle(nst_imsize)
             stylized_img = img_style.nst_stylize(content_img, style_img)
             bot.send_photo(message.chat.id, stylized_img)
             update_state(message, START)
