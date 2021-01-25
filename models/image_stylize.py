@@ -2,7 +2,7 @@ from models.nst_model import NSTModel
 from models.cgan_model import CGANModel
 
 
-class ImgStyle:
+class ImgStylize:
 
     def __init__(self, imsize=None):
         self.imsize = imsize

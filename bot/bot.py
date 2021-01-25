@@ -6,7 +6,7 @@ import telebot
 from PIL import Image
 from telebot import types
 
-from models.image_stylize import ImgStyle
+from models.image_stylize import ImgStylize
 from dotenv import load_dotenv
 # import numpy as np
 from config import nst_imsize
@@ -160,7 +160,7 @@ def my_bot():
 
         # делаем стилизацию и высылаем в чат
         bot.send_message(message.chat.id, text="Ожидайте 3-5 минут...")
-        img_stylizer = ImgStyle(nst_imsize)
+        img_stylizer = ImgStylize(nst_imsize)
         stylized_img = img_stylizer.nst_stylize(content_img, style_img)
         bot.send_photo(message.chat.id, stylized_img)
         del img_stylizer
@@ -271,7 +271,7 @@ def my_bot():
             content_img = Image.open(io.BytesIO(content_img))  # to PIL Image format
             # делаем стилизацию и высылаем в чат
             bot.send_message(message.chat.id, text="Ожидайте около пол минуты...")
-            img_stylizer = ImgStyle()
+            img_stylizer = ImgStylize()
             stylized_img = img_stylizer.cgan_stylize(content_img, gan_styles[fast_style])
             bot.send_photo(message.chat.id, stylized_img)
             del img_stylizer
