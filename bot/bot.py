@@ -294,6 +294,7 @@ def my_bot():
         bot.send_message(message.chat.id, text=text)
 
     @bot.message_handler()
+    @bot.message_handler(commands=[commands["hello"]])
     def handle_any(message):
         keyboard_start = telebot.types.ReplyKeyboardMarkup(True)
         keyboard_start.row(*start_buttons)

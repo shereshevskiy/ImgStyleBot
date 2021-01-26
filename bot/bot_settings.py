@@ -1,6 +1,7 @@
 commands = {
     "start": "start",
     "help": "help",
+    "hello": "hello",
     "gan_styles": "fast_styles",
     "nst": "slow",
     "gan": "fast",
@@ -13,6 +14,7 @@ start_buttons = ["/" + commands["start"], "/" + commands["help"], "/" + commands
 commands_descr = {
     commands["start"]: "старт стилизации с подсказками",
     commands["help"]: "список всех доступных команд",
+    commands["hello"]: "приветственное вводное сообщение, можно просто Привет",
     commands["gan_styles"]: "список предустановленных стилей для быстой стилизации (fast)",
     commands["nst"]: "медленная стилизация (NST-алгоритм)",
     commands["gan"]: "быстрая стилизация (GAN-алгоритм)",
