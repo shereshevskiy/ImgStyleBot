@@ -1,4 +1,5 @@
 import copy
+import os
 
 import torch
 from torch import optim, nn
@@ -20,7 +21,8 @@ class NSTModel:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.content_layers_default = ['conv_4']
         self.style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
-        self.cnn = models.vgg19(pretrained=True).features.to(self.device).eval()
+        # self.cnn = models.vgg19(pretrained=True).features.to(self.device).eval()
+        self.cnn = torch.load(os.path.join("models", "nst_checkpoint", "cnn_shorted.pt")).to(self.device).eval()
         self.cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(self.device)
         self.cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(self.device)
 
