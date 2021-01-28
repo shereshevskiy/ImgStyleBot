@@ -1,4 +1,3 @@
-# import urllib
 import io
 import os
 from collections import defaultdict
@@ -8,7 +7,6 @@ from telebot import types
 
 from models.image_stylize import ImgStylize
 from dotenv import load_dotenv
-# import numpy as np
 from config import nst_imsize
 from bot.bot_settings import gan_styles, start_buttons, START_TEXT, variants, main_menu, commands_descr, commands
 

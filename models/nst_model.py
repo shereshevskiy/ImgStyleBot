@@ -3,7 +3,6 @@ import os
 
 import torch
 from torch import optim, nn
-from torchvision import models
 from torchvision.transforms import transforms
 
 from models.nst_utils import Normalization, ContentLoss, StyleLoss
@@ -21,8 +20,7 @@ class NSTModel:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.content_layers_default = ['conv_4']
         self.style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
-        # self.cnn = models.vgg19(pretrained=True).features.to(self.device).eval()
-        self.cnn = torch.load(os.path.join("models", "nst_checkpoint", "cnn_shorted.pt")).to(self.device).eval()
+        self.cnn_shorted_path = os.path.join("models", "nst_checkpoint", "cnn_shorted.pt")
         self.cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(self.device)
         self.cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(self.device)
 
@@ -163,7 +161,9 @@ class NSTModel:
         style_img = transformer(self.style_img).unsqueeze(0).to(self.device, torch.float)
         input_img = content_img.clone()
 
-        output = self.run_style_transfer(self.cnn, self.cnn_normalization_mean, self.cnn_normalization_std,
+        cnn = self.get_cnn_shorted()
+
+        output = self.run_style_transfer(cnn, self.cnn_normalization_mean, self.cnn_normalization_std,
                                          content_img, style_img, input_img, num_steps=self.num_steps,
                                          style_weight=self.style_weight, content_weight=self.content_weight)
         tensor2img = transforms.ToPILImage()  # тензор в картинку
@@ -173,3 +173,7 @@ class NSTModel:
         image = tensor2img(image)
 
         return image
+
+    def get_cnn_shorted(self):
+        cnn = torch.load(self.cnn_shorted_path).to(self.device).eval()
+        return cnn
