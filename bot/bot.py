@@ -8,17 +8,20 @@ from telebot import types
 from models.image_stylize import ImgStylize
 from dotenv import load_dotenv
 from config import nst_imsize
-from bot.bot_settings import gan_styles, start_buttons, START_TEXT, variants, main_menu, commands_descr, commands
+from bot.bot_settings import (gan_styles, nst_styles, start_buttons, START_TEXT, variants, main_menu,
+                              commands_descr, commands, style_imp_path)
 
 load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
+nst_styles_str = "\n".join([f"{num+1} {style_name}" for num, style_name in enumerate(nst_styles.keys())])
+gan_styles_str = '\n'.join(gan_styles.keys())
 
 # init of store for photo ids
 PHOTO_IDs = defaultdict(lambda: defaultdict(lambda: None))
 
 # init stats
-START, START_CONTENT, CONTENT, NST, STYLE, GAN = range(6)
+START, START_CONTENT, CONTENT, NST, STYLE, GAN, ANY = range(7)
 USER_STATE = defaultdict(lambda: START)
 
 
@@ -62,9 +65,9 @@ def my_bot():
         PHOTO_IDs[message.chat.id][commands["content_img"]] = photo_id
 
         text = f"""
-        Ваша картинка получена :)
-        Будем ее стилизовать.
-        Стилизацию можно сделать двумя способами:
+Ваша картинка получена :)
+Будем ее стилизовать.
+Стилизацию можно сделать двумя способами:
         
 1) Медленный вариант. Здесь стиль задаете Вы. Нужно прислать картинку, которая будет использована как образец стиля. 
 Например - любая картина в стиле барокко, абстракционизм и тп. Кнопка {commands["nst"]} Придется подождать 3-5 минут 
@@ -73,8 +76,8 @@ def my_bot():
 Кнопка {commands["gan"]} 
 Займет около полу минуты
 
-    Укажите, пожалуйста, какой вариант Вы выбираете?
-        """
+Укажите, пожалуйста, какой вариант Вы выбираете?
+"""
 
         def create_keyboard():
             buttons_list = variants
@@ -100,10 +103,9 @@ def my_bot():
             update_state(message, NST)
 
         elif callback_text == variants[1]:
-            fast_styles_str = '\n'.join(gan_styles.keys())
             text = f"""
             Список стилей:
-            \n{fast_styles_str}
+            \n{gan_styles_str}
             
             Выберите, пожалуйста, и вышлите название стиля
             (можно использовать кнопки внизу)
@@ -135,10 +137,15 @@ def my_bot():
             return
 
         style_id = PHOTO_IDs[message.chat.id][commands["style_img"]]
-        if style_id is None:
+        bot_style_file_name = PHOTO_IDs[message.chat.id]["bot_style_file_name"]
+        if (style_id is None) and (bot_style_file_name is None):
             text = f"""
 Нет картинки стиля.
-Можете ввести ее прямо сейчас
+Пришлите картинку стиля или выберите из имеющихся:
+
+{nst_styles_str}
+
+Можете прислать картинку или номер стиля прямо сейчас:
 """
             update_state(message, STYLE)
 
@@ -152,9 +159,12 @@ def my_bot():
         content_img = bot.download_file(content_info.file_path)
         content_img = Image.open(io.BytesIO(content_img))  # to PIL Image format
 
-        style_info = bot.get_file(style_id)
-        style_img = bot.download_file(style_info.file_path)
-        style_img = Image.open(io.BytesIO(style_img))  # to PIL Image format
+        if style_id:
+            style_info = bot.get_file(style_id)
+            style_img = bot.download_file(style_info.file_path)
+            style_img = Image.open(io.BytesIO(style_img))  # to PIL Image format
+        else:
+            style_img = Image.open(os.path.join(style_imp_path, f"{bot_style_file_name}"))
 
         # делаем стилизацию и высылаем в чат
         bot.send_message(message.chat.id, text="Ожидайте 3-5 минут...")
@@ -165,8 +175,8 @@ def my_bot():
 
         # готовим для следующуй стилизации
         text = f"""
-Что дальше? 
-Можете сменить входные картинки или выбрать вариант стилизации.
+Получите результат :) 
+Далее можете повторить: сменить входные картинки или выбрать вариант стилизации.
 Используйте кнопки внизу или /{commands["help"]}
 """
         keyboard_styles = telebot.types.ReplyKeyboardMarkup(True)
@@ -174,9 +184,15 @@ def my_bot():
         bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
 
     @bot.message_handler(commands=[commands["style_img"]])
-    def handle_style(message):
+    def handle_nst_style(message):
         text = f"""
 Пришлите картинку стиля
+или
+выберите стиль из имеющихся:
+
+{nst_styles_str}
+
+Пришлите картинку или номер стиля
 /{commands["help"]} 
 """
         update_state(message, STYLE)
@@ -185,12 +201,26 @@ def my_bot():
         keyboard_styles.row(*main_menu)
         bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
 
-    @bot.message_handler(func=lambda message: get_state(message) == STYLE, content_types=["photo"])
-    def handle_style_photo(message):
+    @bot.message_handler(func=lambda message: get_state(message) == STYLE, content_types=["photo", "text"])
+    def handle_nst_style_photo(message):
+        PHOTO_IDs[message.chat.id][commands["style_img"]] = None
+        PHOTO_IDs[message.chat.id]["bot_style_file_name"] = None
         if message.photo:
             # обрабатываем входящее сообщение
             photo_id = message.photo[0].file_id
             PHOTO_IDs[message.chat.id][commands["style_img"]] = photo_id
+        if message.text:
+            if message.text in [str(num) for num in range(1, len(nst_styles) + 1)]:
+                PHOTO_IDs[message.chat.id]["bot_style_file_name"] = list(nst_styles.values())[int(message.text) - 1]
+                style_img = Image.open(
+                    os.path.join(style_imp_path, f'{PHOTO_IDs[message.chat.id]["bot_style_file_name"]}')
+                )
+                bot.send_photo(message.chat.id, style_img, "Образец стиля")
+                update_state(message, ANY)
+            else:
+                bot.send_message(message.chat.id, "Номер стиля не верный")
+                update_state(message, ANY)
+                return
 
         # готовим для следующую стилизации
         text = f"""
@@ -283,13 +313,35 @@ def my_bot():
             bot.send_message(message.chat.id, text=text)
 
     @bot.message_handler(commands=[commands["gan_styles"]])
-    def handle_styles(message):
-        fast_styles_str = '\n'.join(gan_styles.keys())
+    def handle_gan_styles(message):
         text = f"""
-        Список предустановленных стилей
-        \n{fast_styles_str}
-        """
-        bot.send_message(message.chat.id, text=text)
+Список предустановленных БЫСТРЫХ стилей
+
+{gan_styles_str}
+
+Можно задать стиль, укажите название:
+(можно использовать кнопки внизу)
+/{commands["help"]}
+"""
+        keyboard_styles = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard_styles.row(*gan_styles.keys())
+        bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
+        update_state(message, GAN)
+
+    @bot.message_handler(commands=[commands["nst_styles"]])
+    def handle_nst_styles(message):
+        text = f"""
+Список предустановленных МЕДЛЕННЫХ стилей
+
+{nst_styles_str}
+
+Можно задать стиль, пришлите номер:
+/{commands["help"]}
+"""
+        keyboard_styles = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard_styles.row(*main_menu)
+        bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
+        update_state(message, STYLE)
 
     @bot.message_handler()
     @bot.message_handler(commands=[commands["hello"]])

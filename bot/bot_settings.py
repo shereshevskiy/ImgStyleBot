@@ -1,7 +1,10 @@
+import os
+
 commands = {
     "start": "start",
     "help": "help",
     "hello": "hello",
+    "nst_styles": "slow_styles",
     "gan_styles": "fast_styles",
     "nst": "slow",
     "gan": "fast",
@@ -14,8 +17,9 @@ start_buttons = ["/" + commands["start"], "/" + commands["help"], "/" + commands
 commands_descr = {
     commands["start"]: "старт стилизации с подсказками",
     commands["help"]: "список всех доступных команд",
-    commands["hello"]: "приветственное вводное сообщение, можно просто Привет",
-    commands["gan_styles"]: "список предустановленных стилей для быстой стилизации (fast)",
+    commands["hello"]: "приветственное вводное сообщение, можно просто написать Привет",
+    commands["nst_styles"]: "список предустановленных стилей для МЕДЛЕННОЙ стилизации (slow)",
+    commands["gan_styles"]: "список предустановленных стилей для БЫСТРОЙ стилизации (fast)",
     commands["nst"]: "медленная стилизация (NST-алгоритм)",
     commands["gan"]: "быстрая стилизация (GAN-алгоритм)",
     commands["style_img"]: "загрузить картинку стиля для медленной стилизации",
@@ -29,6 +33,30 @@ gan_styles = {
     'Укиё-э': 'ukiyoe',
     'Вангог': 'vangogh'
 }
+
+nst_styles = {
+    "Андеграунд": "andegraund.jpg",
+    "Авангардизм": "Avangardizm.jpg",
+    "Дадаизм": "Dadaizm.jpg",
+    "Декоративная живопись": "Dekorativnay.jpg",
+    "Геометрический абстракционизм": "geometr.jpg",
+    "Импрессионизм": "impres.jpg",
+    "Клуазонизм": "kluazonizm.jpg",
+    "Конструктивизм": "konstruktivizm.jpg",
+    "Кубизм": "kubizm.jpg",
+    "Кубофутуризм": "kubizm.jpg",
+    "Лучизм": "lu4izm.jpg",
+    "Метареализм": "metar.jpg",
+    "Модерн": "modern.jpg",
+    "Наивное искусство": "naivnoe.jpg",
+    "Неоэкспрессионизм": "neoexpressionism.jpg",
+    "Неопластицизм": "neopla.jpg",
+    "Оп-Арт": "op-art.jpg",
+    "Орфизм": "orfizm.jpg",
+    "Пикассо": "picasso.jpg"
+}
+
+style_imp_path = os.path.join("models", "style_images")
 
 # variants init
 variants = [commands["nst"], commands["gan"]]
