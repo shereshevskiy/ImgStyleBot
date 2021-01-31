@@ -1,29 +1,34 @@
 import os
 
-commands = {
+commands_aliases = {
     "start": "start",
     "help": "help",
+    "run": "run",
     "hello": "hello",
     "nst_styles": "slow_styles",
     "gan_styles": "fast_styles",
     "nst": "slow",
     "gan": "fast",
-    "style_img": "style_img",
-    "content_img": "cont_img"
+    "style_img": "set_style",
+    "content_img": "set_img",
+    "about_author": "about_author"
 }
 
-start_buttons = ["/" + commands["start"], "/" + commands["help"], "/" + commands["nst"], "/" + commands["gan"]]
+start_menu = ["/" + commands_aliases["run"], "/" + commands_aliases["help"], "/" + commands_aliases["nst"],
+              "/" + commands_aliases["gan"]]
 
-commands_descr = {
-    commands["start"]: "старт стилизации с подсказками",
-    commands["help"]: "список всех доступных команд",
-    commands["hello"]: "приветственное вводное сообщение, можно просто написать Привет",
-    commands["nst_styles"]: "список предустановленных стилей для МЕДЛЕННОЙ стилизации (slow)",
-    commands["gan_styles"]: "список предустановленных стилей для БЫСТРОЙ стилизации (fast)",
-    commands["nst"]: "медленная стилизация (NST-алгоритм)",
-    commands["gan"]: "быстрая стилизация (GAN-алгоритм)",
-    commands["style_img"]: "загрузить картинку стиля для медленной стилизации",
-    commands["content_img"]: "загрузить стилизуемую картинку (контент-картинку)"
+commands = {
+    commands_aliases["start"]: "начало общения с ботом",
+    commands_aliases["help"]: "список всех доступных команд",
+    commands_aliases["run"]: "старт стилизации с подсказками",
+    commands_aliases["hello"]: "приветственное вводное сообщение, можно просто написать Привет",
+    commands_aliases["nst_styles"]: "список предустановленных стилей для МЕДЛЕННОЙ стилизации (slow)",
+    commands_aliases["gan_styles"]: "список предустановленных стилей для БЫСТРОЙ стилизации (fast)",
+    commands_aliases["nst"]: "медленная стилизация (NST-алгоритм)",
+    commands_aliases["gan"]: "быстрая стилизация (GAN-алгоритм)",
+    commands_aliases["style_img"]: "загрузить картинку стиля для медленной стилизации",
+    commands_aliases["content_img"]: "загрузить стилизуемую картинку (контент-картинку)",
+    commands_aliases["about_author"]: "об авторе"
 }
 
 # gan_styles
@@ -59,26 +64,31 @@ nst_styles = {
 style_imp_path = os.path.join("models", "style_images")
 
 # variants init
-variants = [commands["nst"], commands["gan"]]
+variants = [commands_aliases["nst"], commands_aliases["gan"]]
 
-main_menu = ["/" + commands["style_img"], "/" + commands["content_img"], "/" + commands["nst"], "/" + commands["gan"]]
+main_menu = ["/" + commands_aliases["style_img"], "/" + commands_aliases["content_img"],
+             "/" + commands_aliases["nst"], "/" + commands_aliases["gan"]]
 
 START_TEXT = f"""
     Привет! 
     Я Бот, который может стилизовать Ваши картинки. 
 Я это делаю в двух вариантах: 
-    - медленно, с вашим образцом стиля (команда /{commands["nst"]} и 
-    - быстро и с использованием предустановленных у меня стилей (команда /{commands["gan"]}). 
+
+    1) медленно, с вашим образцом стиля или с предустановленными образцами стилей (команда /{commands_aliases["nst"]}) 
+и 
+    2) быстро, с использованием предустановленных у меня стилей (команда /{commands_aliases["gan"]}). 
 
 Вы можете начать стилизацию с подсказками или отдельно ввести картинки и запустить любой вариант стилизации.
 
     Воспользуйтесь командами: 
 
-/{commands["start"]} - {commands_descr[commands["start"]]}
+/{commands_aliases["run"]} - {commands[commands_aliases["run"]]}
 
-/{commands["gan_styles"]} - {commands_descr[commands["gan_styles"]]}
+/{commands_aliases["gan_styles"]} - {commands[commands_aliases["gan_styles"]]}
 
-/{commands["help"]} - {commands_descr[commands["help"]]}
+/{commands_aliases["nst_styles"]} - {commands[commands_aliases["nst_styles"]]}
+
+/{commands_aliases["help"]} - {commands[commands_aliases["help"]]}
 
 или используйте кнопки внизу
 """
