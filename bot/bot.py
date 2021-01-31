@@ -185,8 +185,11 @@ def my_bot():
             style_info = bot.get_file(style_id)
             style_img = bot.download_file(style_info.file_path)
             style_img = Image.open(io.BytesIO(style_img))  # to PIL Image format
+            nst_style_name = "-"
+            
         else:
             style_img = Image.open(os.path.join(style_imp_path, f"{nst_style_filename}"))
+            nst_style_name = PHOTO_IDs[message.chat.id]["nst_style_name"]
 
         # делаем стилизацию и высылаем в чат
         text = """
@@ -197,12 +200,12 @@ def my_bot():
         bot.send_message(message.chat.id, text=text)
         img_stylizer = ImgStylize(nst_imsize)
         stylized_img = img_stylizer.nst_stylize(content_img, style_img)
-        bot.send_photo(message.chat.id, stylized_img)
+        bot.send_photo(message.chat.id, stylized_img, f"Стиль: {nst_style_name}")
         del img_stylizer
 
         # готовим для следующей стилизации
         text = f"""
-Получите результат :) 
+Ваш результат :) 
 Далее можете повторить: сменить входные картинки или выбрать вариант стилизации.
 Используйте кнопки внизу или /{commands_aliases["help"]}
 """
@@ -241,6 +244,7 @@ def my_bot():
                 nst_style_name = list(nst_styles.keys())[int(message.text) - 1]
                 nst_style_filename = list(nst_styles.values())[int(message.text) - 1]
                 PHOTO_IDs[message.chat.id]["nst_style_filename"] = nst_style_filename
+                PHOTO_IDs[message.chat.id]["nst_style_name"] = nst_style_name
                 style_img = Image.open(
                     os.path.join(style_imp_path, f'{PHOTO_IDs[message.chat.id]["nst_style_filename"]}')
                 )
@@ -291,10 +295,9 @@ def my_bot():
 
     @bot.message_handler(commands=[commands_aliases["gan"]])
     def handle_gan(message):
-        fast_styles_str = '\n'.join(gan_styles.keys())
         text = f"""
 Список стилей:
-\n{fast_styles_str}
+\n{gan_styles_str}
 
 Выберите, пожалуйста, и вышлите название стиля
 (можно использовать кнопки внизу)
@@ -306,9 +309,9 @@ def my_bot():
 
     @bot.message_handler(func=lambda message: (get_state(message) == GAN) & (message.text in gan_styles.keys()))
     def handle_GAN(message):
-        fast_style = message.text
-        if fast_style in gan_styles.keys():
-            PHOTO_IDs[message.chat.id]["fast_style"] = fast_style
+        gan_style = message.text
+        if gan_style in gan_styles.keys():
+            PHOTO_IDs[message.chat.id]["gan_style"] = gan_style
 
             content_id = PHOTO_IDs[message.chat.id][commands_aliases["content_img"]]
             if content_id is None:
@@ -329,8 +332,8 @@ def my_bot():
             # делаем стилизацию и высылаем в чат
             bot.send_message(message.chat.id, text="Ожидайте около пол минуты...")
             img_stylizer = ImgStylize()
-            stylized_img = img_stylizer.cgan_stylize(content_img, gan_styles[fast_style])
-            bot.send_photo(message.chat.id, stylized_img)
+            stylized_img = img_stylizer.cgan_stylize(content_img, gan_styles[gan_style])
+            bot.send_photo(message.chat.id, stylized_img, f"Стиль: {gan_style}")
             del img_stylizer
 
             text = f"""

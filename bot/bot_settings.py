@@ -7,8 +7,8 @@ commands_aliases = {
     "hello": "hello",
     "nst_styles": "slow_styles",
     "gan_styles": "fast_styles",
-    "nst": "slow",
-    "gan": "fast",
+    "nst": "run_slow",
+    "gan": "run_fast",
     "style_img": "set_style",
     "content_img": "set_img",
     "about_author": "about_author"
