@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from config import nst_imsize
 from bot.bot_settings import (gan_styles, nst_styles, start_menu, START_TEXT, variants, main_menu,
                               commands, commands_aliases, style_imp_path)
-
 load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
@@ -20,8 +19,8 @@ gan_styles_str = '\n'.join(gan_styles.keys())
 # init of store for photo ids
 PHOTO_IDs = defaultdict(lambda: defaultdict(lambda: None))
 
-# init stats
-START, START_CONTENT, CONTENT, NST, GAN, ANY = range(6)
+# init of stats
+START, START_CONTENT, CONTENT, NST, GAN = range(5)
 USER_STATE = defaultdict(lambda: START)
 
 
@@ -35,16 +34,15 @@ def update_state(message, state):
 
 
 # *************** bot ***************
-
 def my_bot():
     bot = telebot.TeleBot(TOKEN)
 
     # set commands
-    commands_ = [types.BotCommand(f"/{comm}", desc) for comm, desc in commands.items()]
-    bot.set_my_commands(commands_)
+    set_commands = [types.BotCommand(f"/{command}", description) for command, description in commands.items()]
+    bot.set_my_commands(set_commands)
 
     @bot.message_handler(commands=[commands_aliases["run"]])
-    def handle_start(message):
+    def handle_run(message):
         text = """
 Пришлите картинку, которую Вы хотите изменить (стилизовать)
 """
@@ -62,18 +60,19 @@ def my_bot():
         keyboard_styles = types.ReplyKeyboardMarkup(True)
         keyboard_styles.row(*main_menu)
         bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
+        update_state(message, START)
 
     @bot.message_handler(commands=[commands_aliases["start"], commands_aliases["hello"]])
-    def handle_any(message):
+    def handle_start(message):
         keyboard_start = types.ReplyKeyboardMarkup(True)
         keyboard_start.row(*start_menu)
         bot.send_message(message.chat.id, text=START_TEXT, reply_markup=keyboard_start)
         update_state(message, START)
 
     @bot.message_handler(func=lambda message: get_state(message) == START_CONTENT, content_types=['photo'])
-    def handle_content(message):
+    def handle_START_CONTENT(message):
         photo_id = message.photo[0].file_id
-        PHOTO_IDs[message.chat.id][commands_aliases["content_img"]] = photo_id
+        PHOTO_IDs[message.chat.id]["content_img"] = photo_id
 
         text = f"""
 Ваша картинка получена :)
@@ -145,17 +144,16 @@ def my_bot():
         #     photo_id = message.photo[0].file_id
         #     PHOTO_IDs[message.chat.id][commands_aliases["style_img"]] = photo_id
 
-        content_id = PHOTO_IDs[message.chat.id][commands_aliases["content_img"]]
+        content_id = PHOTO_IDs[message.chat.id]["content_img"]
         if content_id is None:
             text = f"""
 Нет изменяемой (стилизуемой) картинки.
 Можете ввести ее прямо сейчас
 """
-            update_state(message, CONTENT)
-
             keyboard_styles = types.ReplyKeyboardMarkup(True)
             keyboard_styles.row(*main_menu)
             bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
+            update_state(message, CONTENT)
             return
 
         style_id = PHOTO_IDs[message.chat.id][commands_aliases["style_img"]]
@@ -169,11 +167,10 @@ def my_bot():
 
 Можете прислать картинку или номер стиля прямо сейчас:
 """
-            update_state(message, NST)
-
             keyboard_styles = types.ReplyKeyboardMarkup(True)
             keyboard_styles.row(*main_menu)
             bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
+            update_state(message, NST)
             return
 
         # готовим nst-стилизацию
@@ -188,7 +185,8 @@ def my_bot():
             nst_style_name = "-"
             
         else:
-            style_img = Image.open(os.path.join(style_imp_path, f"{nst_style_filename}"))
+            nst_style_filename = nst_style_filename or "NaN"
+            style_img = Image.open(os.path.join(style_imp_path, nst_style_filename))
             nst_style_name = PHOTO_IDs[message.chat.id]["nst_style_name"]
 
         # делаем стилизацию и высылаем в чат
@@ -231,42 +229,8 @@ def my_bot():
         keyboard_styles.row(*main_menu)
         bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
 
-    @bot.message_handler(func=lambda message: get_state(message) == NST, content_types=["photo", "text"])
-    def handle_NST(message):
-        PHOTO_IDs[message.chat.id][commands_aliases["style_img"]] = None
-        PHOTO_IDs[message.chat.id]["nst_style_filename"] = None
-        if message.photo:
-            # обрабатываем входящее сообщение
-            photo_id = message.photo[0].file_id
-            PHOTO_IDs[message.chat.id][commands_aliases["style_img"]] = photo_id
-        if message.text:
-            if message.text in [str(num) for num in range(1, len(nst_styles) + 1)]:
-                nst_style_name = list(nst_styles.keys())[int(message.text) - 1]
-                nst_style_filename = list(nst_styles.values())[int(message.text) - 1]
-                PHOTO_IDs[message.chat.id]["nst_style_filename"] = nst_style_filename
-                PHOTO_IDs[message.chat.id]["nst_style_name"] = nst_style_name
-                style_img = Image.open(
-                    os.path.join(style_imp_path, f'{PHOTO_IDs[message.chat.id]["nst_style_filename"]}')
-                )
-                bot.send_photo(message.chat.id, style_img, f"Образец стиля - {nst_style_name}")
-                update_state(message, ANY)
-            else:
-                bot.send_message(message.chat.id, "Номер стиля не верный")
-                update_state(message, ANY)
-                return
-
-        # готовим для следующую стилизации
-        text = f"""
-Картинка-стиль есть )
-Далее /{commands_aliases["nst"]}, кнопки внизу или любая команда
-/{commands_aliases["help"]}
-"""
-        keyboard_styles = types.ReplyKeyboardMarkup(True)
-        keyboard_styles.row(*main_menu)
-        bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
-
     @bot.message_handler(commands=[commands_aliases["content_img"]])
-    def handle_content(message):
+    def handle_content_img(message):
         text = f"""
 Пришлите изменяемую картинку (стилизуемую)
 /{commands_aliases["help"]}
@@ -277,11 +241,11 @@ def my_bot():
         update_state(message, CONTENT)
 
     @bot.message_handler(func=lambda message: get_state(message) == CONTENT, content_types=["photo"])
-    def handle_content_photo(message):
+    def handle_CONTENT_photo(message):
         if message.photo:
             # обрабатываем входящее сообщение
             photo_id = message.photo[0].file_id
-            PHOTO_IDs[message.chat.id][commands_aliases["content_img"]] = photo_id
+            PHOTO_IDs[message.chat.id]["content_img"] = photo_id
 
         # готовим для следующую стилизации
         text = f"""
@@ -313,7 +277,7 @@ def my_bot():
         if gan_style in gan_styles.keys():
             PHOTO_IDs[message.chat.id]["gan_style"] = gan_style
 
-            content_id = PHOTO_IDs[message.chat.id][commands_aliases["content_img"]]
+            content_id = PHOTO_IDs[message.chat.id]["content_img"]
             if content_id is None:
                 text = f"""
 Нет изменяемой (стилизуемой) картинки.
@@ -322,7 +286,7 @@ def my_bot():
                 update_state(message, CONTENT)
 
                 keyboard_styles = types.ReplyKeyboardMarkup(True)
-                keyboard_styles.row("/" + commands_aliases["content_img"])
+                keyboard_styles.row(*main_menu)
                 bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
                 return
 
@@ -379,11 +343,49 @@ def my_bot():
         bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
         update_state(message, NST)
 
-    @bot.message_handler(commands=[commands_aliases["about_author"]])
+    @bot.message_handler(func=lambda message: get_state(message) == NST, content_types=["photo", "text"])
+    def handle_NST(message):
+        PHOTO_IDs[message.chat.id][commands_aliases["style_img"]] = None
+        PHOTO_IDs[message.chat.id]["nst_style_filename"] = None
+        if message.photo:
+            # обрабатываем входящее сообщение
+            photo_id = message.photo[0].file_id
+            PHOTO_IDs[message.chat.id][commands_aliases["style_img"]] = photo_id
+        if message.text:
+            if message.text in [str(num) for num in range(1, len(nst_styles) + 1)]:
+                nst_style_name = list(nst_styles.keys())[int(message.text) - 1]
+                nst_style_filename = list(nst_styles.values())[int(message.text) - 1]
+                PHOTO_IDs[message.chat.id]["nst_style_filename"] = nst_style_filename
+                PHOTO_IDs[message.chat.id]["nst_style_name"] = nst_style_name
+                nst_style_filename = PHOTO_IDs[message.chat.id]["nst_style_filename"] or "NaN"
+                style_img = Image.open(
+                    os.path.join(style_imp_path, nst_style_filename)
+                )
+                bot.send_photo(message.chat.id, style_img, f"Образец стиля - {nst_style_name}")
+            else:
+                text = "Номер стиля не верный. Попробуйте ввести номер стиля еще раз или пришлите картинку стиля"
+                bot.send_message(message.chat.id, text)
+                # update_state(message, START)
+                return
+
+        # готовим для следующую стилизации
+        text = f"""
+Картинка-стиль есть )
+Далее /{commands_aliases["nst"]}, кнопки внизу или любая команда
+/{commands_aliases["help"]}
+"""
+        keyboard_styles = types.ReplyKeyboardMarkup(True)
+        keyboard_styles.row(*main_menu)
+        bot.send_message(message.chat.id, text=text, reply_markup=keyboard_styles)
+
+        update_state(message, START)
+
+    @bot.message_handler(commands=[commands_aliases["about"]])
     def handle_about_author(message):
         text = """
 Автор Дмитрий Шерешевский (c)
-Подробнее здесь https://www.linkedin.com/in/dmitry-shereshevskiy/
+Подробнее об авторе здесь https://www.linkedin.com/in/dmitry-shereshevskiy/
+О проекте здесь https://github.com/shereshevskiy/ImgStyleBot/blob/master/README.md
 """
         keyboard_start = types.ReplyKeyboardMarkup(True)
         keyboard_start.row(*start_menu)

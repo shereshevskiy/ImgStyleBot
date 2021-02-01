@@ -11,7 +11,7 @@ commands_aliases = {
     "gan": "run_fast",
     "style_img": "set_style",
     "content_img": "set_img",
-    "about_author": "about_author"
+    "about": "about"
 }
 
 start_menu = ["/" + commands_aliases["run"], "/" + commands_aliases["help"], "/" + commands_aliases["nst"],
@@ -28,7 +28,7 @@ commands = {
     commands_aliases["gan"]: "быстрая стилизация (GAN-алгоритм)",
     commands_aliases["style_img"]: "загрузить картинку стиля для медленной стилизации",
     commands_aliases["content_img"]: "загрузить стилизуемую картинку (контент-картинку)",
-    commands_aliases["about_author"]: "об авторе"
+    commands_aliases["about"]: "о проекте и об авторе",
 }
 
 # gan_styles
