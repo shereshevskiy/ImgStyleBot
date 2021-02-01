@@ -9,10 +9,10 @@ torchvision==0.8.2+cpu
 
 -f https://download.pytorch.org/whl/torch_stable.html
 torchaudio==0.7.2
-# numpy
+Pillow~=8.1.0
+numpy
 # pandas
 # requests
 # jupyter  # for developing only, not for prod
 # jupyterlab  # for developing only, not for prod
 # matplotlib  # for developing only, not for prod
-Pillow~=8.1.0
