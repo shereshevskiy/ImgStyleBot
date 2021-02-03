@@ -191,10 +191,8 @@ def my_bot():
 
         # делаем стилизацию и высылаем в чат
         text = """
-Ожидайте. Обычно 3-5 минут, иногда до 10 ...
-(Если ждете дольше - лучше перезапустите задачу. Возможно, случилось что-то непредвиденное)
-        
-        """
+Ожидайте. Обычно 3-5 минут, иногда до 10-15 ...      
+"""
         bot.send_message(message.chat.id, text=text)
         img_stylizer = ImgStylize(nst_imsize)
         stylized_img = img_stylizer.nst_stylize(content_img, style_img)

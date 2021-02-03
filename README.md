@@ -41,7 +41,7 @@
 
 ### Обучение нейросетей
 12. Для алгоритмов **быстрой стилизации** с помощью нейросети **CycleGAN** было обучено **четыре** модели 
-   на датасетах из картин художников. Обучение проводилось на сервисе **Google Colab**:
+   на датасетах из картин художников. Обучение проводилось на сервисе **Google Colab Pro**:
     - **Моне**, ноутбук с обучением модели [здесь](https://colab.research.google.com/drive/14GVtbpuUTPQzVbTM_OxKbqH4vNGB9X_V?usp=sharing)
     - **Сезанн**, ноутбук с обучением модели [здесь](https://colab.research.google.com/drive/15ZVAUcJvTqL7ry4W9NKn2RINrS5mhpOr?usp=sharing)
     - **Укиё-э**, ноутбук с обучением модели [здесь](https://colab.research.google.com/drive/1qDywo9sTxM625bgida4guqmbbQIqWnel?usp=sharing)
